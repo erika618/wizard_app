@@ -1,8 +1,46 @@
 # frozen_string_literal: true
 
+# 継承。下記super付きはdevise用メソッドをそのまま実行できる。
+# コメントアウトされている部分について、同名のメソッドを定義することにより、上書きできる。
 class Users::RegistrationsController < Devise::RegistrationsController
   # before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
+
+  def new
+    # @user = User.newと同意義
+    super
+  end
+
+  def create
+    @user = User.new(sign_up_params)
+    # falseの場合にはnewアクションへ
+    render :new and return unless @user.valid?
+
+    # ハッシュオブジェクトの形で情報を保持させるためattributesメソッドを使用
+    session['devise.regist_data'] = { user: @user.attributes }
+    session['devise.regist_data'][:user]['password'] = params[:user][:password]
+    #  （データを保存したくない時に使う）buildメソッドを使ってモデル間を関連付け
+    @address = @user.build_address
+    # 住所登録ページへ
+    render :new_address
+  end
+
+  def create_address
+    @user = User.new(session['devise.regist_data']['user'])
+    @address = Address.new(address_params)
+    # 「and return」で処理を中断し、バリデーションチェック
+    render :new_address and return unless @address.valid?
+
+    @user.build_address(@address.attributes)
+    @user.save
+    session['devise.regist_data']['user'].clear
+    # ユーザーの新規登録ができてもログインできているわけではないため、sign_inメソッドを利用してログインする
+    sign_in(:user, @user)
+  end
+
+  def address_params
+    params.require(:address).permit(:postal_code, :address)
+  end
 
   # GET /resource/sign_up
   # def new
