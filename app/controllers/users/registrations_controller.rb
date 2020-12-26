@@ -16,10 +16,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
     # falseの場合にはnewアクションへ
     render :new and return unless @user.valid?
 
-    # ハッシュオブジェクトの形で情報を保持させるためattributesメソッドを使用
+    # ハッシュオブジェクトの形で情報を代入（sessionに保持）
     session['devise.regist_data'] = { user: @user.attributes }
+    # パスワードは含まれていないため追加で代入（[:password]でも値は取得出来た）
     session['devise.regist_data'][:user]['password'] = params[:user][:password]
-    #  （データを保存したくない時に使う）buildメソッドを使ってモデル間を関連付け
+    #  @userに紐づくAdressモデルのインスタンスを生成（buildメソッドでモデル間を関連付け）
     @address = @user.build_address
     # 住所登録ページへ
     render :new_address
@@ -28,11 +29,12 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def create_address
     @user = User.new(session['devise.regist_data']['user'])
     @address = Address.new(address_params)
-    # 「and return」で処理を中断し、バリデーションチェック
+    # 「and return」で処理を中断し、バリデーションチェック（あっていない場合にはnew_addressアクションに画面遷移）
     render :new_address and return unless @address.valid?
-
+    # バリデーションチェックが完了した情報とsessionで保持した情報を合わせ、ユーザー情報として保存
     @user.build_address(@address.attributes)
     @user.save
+    # sessionを削除
     session['devise.regist_data']['user'].clear
     # ユーザーの新規登録ができてもログインできているわけではないため、sign_inメソッドを利用してログインする
     sign_in(:user, @user)
