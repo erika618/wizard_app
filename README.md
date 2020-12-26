@@ -16,8 +16,8 @@ Things you may want to cover:
 # アプリ名
 wizard_app
 
-<!-- # URL
-https://furima-29074.herokuapp.com/ -->
+# URL
+https://wizard-app-20201226.herokuapp.com/
 
 # 説明
 
@@ -53,3 +53,4 @@ devise機能を編集し、ウィザード形式（対話するように順番�
 ### Association
 
 - belongs_to :user
+
