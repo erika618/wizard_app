@@ -54,3 +54,12 @@ devise機能を編集し、ウィザード形式（対話するように順番�
 
 - belongs_to :user
 
+# clone
+```
+% git clone https://github.com/erika618/wizard_app.git
+% cd wizard_app
+% bundle install
+% yarn install
+% rails db:create
+% rails db:migrate
+```
